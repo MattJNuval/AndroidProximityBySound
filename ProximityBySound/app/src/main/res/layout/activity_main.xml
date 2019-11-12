@@ -8,13 +8,6 @@
     tools:context=".MainActivity">
 
     <Button
-        android:id="@+id/audio"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginTop="20dp"
-        android:text="Perms" />
-    <Button
         android:id="@+id/startAndStop"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -28,6 +21,14 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
         android:text="Status: "
+        />
+
+    <TextView
+        android:id="@+id/timer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="Timer: "
         />
 
     <TextView

@@ -26,15 +26,16 @@ public class MainActivity extends AppCompatActivity {
 
     private MediaRecorder mRecorder  = null;
 
-
-    Button b;
     Button s;
 
     TextView statusTv;
     TextView ampTv;
     TextView distTv;
-    boolean finishBtnPressed;
+    TextView timerTv;
+
     CountDownTimer cdt;
+
+    private int timer = 0;
 
 
     // Requesting permission to RECORD_AUDIO
@@ -46,14 +47,10 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        b = (Button)findViewById(R.id.audio);
-        b.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                checkPermission(Manifest.permission.RECORD_AUDIO,REQUEST_RECORD_AUDIO_PERMISSION);
-            }
-        });
+        //Checks Permission
+        checkPermission(Manifest.permission.RECORD_AUDIO,REQUEST_RECORD_AUDIO_PERMISSION);
 
+        timerTv = (TextView) findViewById(R.id.timer);
         ampTv = (TextView) findViewById(R.id.amplitude);
         distTv = (TextView) findViewById(R.id.distance);
 
@@ -64,6 +61,7 @@ public class MainActivity extends AppCompatActivity {
                 if(s.getText().equals("Stop")) {
                     stop();
                     s.setText("Start");
+                    timer = 0;
                     cdt.cancel();
 
                 } else {
@@ -73,8 +71,10 @@ public class MainActivity extends AppCompatActivity {
                     cdt = new CountDownTimer(1000,1000) {
                         @Override
                         public void onTick(long millisUntilFinished) {
-                            ampTv.setText("Amplitude: " + getAmplitude());
-
+                            double amp = getAmplitude();
+                            ampTv.setText("Amplitude: " + amp);
+                            timerTv.setText("Timer: " + String.valueOf(timer++) + "s");
+                            DistanceChecker(amp);
 
                         }
 
@@ -90,8 +90,24 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    public void start() {
+    public void DistanceChecker(double amplitude) {
+        if(amplitude > 30000) {
+            distTv.setText("Distance: 1");
+        }
+        else if(amplitude > 20000) {
+            distTv.setText("Distance: 2");
+        }
+        else if(amplitude > 10000) {
+            distTv.setText("Distance: 3");
+        }
+        else if(amplitude > 5000) {
+            distTv.setText("Distance: 4");
+        } else {
+            distTv.setText("Distance: 5");
+        }
+    }
 
+    public void start() {
         statusTv = (TextView) findViewById(R.id.status);
         try {
             if (mRecorder == null) {
