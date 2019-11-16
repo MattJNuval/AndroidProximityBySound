@@ -17,25 +17,24 @@ import android.widget.Toast;
 
 import java.util.Random;
 
+import be.tarsos.dsp.AudioDispatcher;
+import be.tarsos.dsp.AudioEvent;
+import be.tarsos.dsp.AudioProcessor;
+import be.tarsos.dsp.io.android.AudioDispatcherFactory;
+import be.tarsos.dsp.pitch.PitchDetectionHandler;
+import be.tarsos.dsp.pitch.PitchDetectionResult;
+import be.tarsos.dsp.pitch.PitchProcessor;
+
 public class MainActivity extends AppCompatActivity {
 
 
 
-    private static final int CAMERA_PERMISSION_CODE = 100;
     private static final int REQUEST_RECORD_AUDIO_PERMISSION = 200;
 
-    private MediaRecorder mRecorder  = null;
+    AudioDispatcher dispatcher = AudioDispatcherFactory.fromDefaultMicrophone(22050,1024,0);
 
-    Button s;
-
-    TextView statusTv;
-    TextView ampTv;
-    TextView distTv;
-    TextView timerTv;
-
-    CountDownTimer cdt;
-
-    private int timer = 0;
+    TextView pitchText;
+    TextView noteText;
 
 
     // Requesting permission to RECORD_AUDIO
@@ -50,100 +49,66 @@ public class MainActivity extends AppCompatActivity {
         //Checks Permission
         checkPermission(Manifest.permission.RECORD_AUDIO,REQUEST_RECORD_AUDIO_PERMISSION);
 
-        timerTv = (TextView) findViewById(R.id.timer);
-        ampTv = (TextView) findViewById(R.id.amplitude);
-        distTv = (TextView) findViewById(R.id.distance);
+        pitchText = (TextView) findViewById(R.id.pitch);
+        noteText = (TextView) findViewById(R.id.note);
 
-        s = (Button) findViewById(R.id.startAndStop);
-        s.setOnClickListener(new View.OnClickListener() {
+        PitchDetectionHandler pdh = new PitchDetectionHandler() {
             @Override
-            public void onClick(View v) {
-                if(s.getText().equals("Stop")) {
-                    stop();
-                    s.setText("Start");
-                    timer = 0;
-                    cdt.cancel();
-
-                } else {
-                    start();
-                    s.setText("Stop");
-
-                    cdt = new CountDownTimer(1000,1000) {
-                        @Override
-                        public void onTick(long millisUntilFinished) {
-                            double amp = getAmplitude();
-                            ampTv.setText("Amplitude: " + amp);
-                            timerTv.setText("Timer: " + String.valueOf(timer++) + "s");
-                            DistanceChecker(amp);
-
-                        }
-
-                        @Override
-                        public void onFinish() {
-                            start();
-                        }
-                    }.start();
-
-                }
+            public void handlePitch(PitchDetectionResult res, AudioEvent e){
+                final float pitchInHz = res.getPitch();
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        processPitch(pitchInHz);
+                    }
+                });
             }
-        });
+        };
+        AudioProcessor pitchProcessor = new PitchProcessor(PitchProcessor.PitchEstimationAlgorithm.FFT_YIN, 22050, 1024, pdh);
+        dispatcher.addAudioProcessor(pitchProcessor);
+
+        Thread audioThread = new Thread(dispatcher, "Audio Thread");
+        audioThread.start();
+
+
 
     }
 
-    public void DistanceChecker(double amplitude) {
-        if(amplitude > 30000) {
-            distTv.setText("Distance: 1");
+
+    public void processPitch(float pitchInHz) {
+
+        pitchText.setText("" + pitchInHz);
+
+        if(pitchInHz >= 110 && pitchInHz < 123.47) {
+            //A
+            noteText.setText("A");
         }
-        else if(amplitude > 20000) {
-            distTv.setText("Distance: 2");
+        else if(pitchInHz >= 123.47 && pitchInHz < 130.81) {
+            //B
+            noteText.setText("B");
         }
-        else if(amplitude > 10000) {
-            distTv.setText("Distance: 3");
+        else if(pitchInHz >= 130.81 && pitchInHz < 146.83) {
+            //C
+            noteText.setText("C");
         }
-        else if(amplitude > 5000) {
-            distTv.setText("Distance: 4");
-        } else {
-            distTv.setText("Distance: 5");
+        else if(pitchInHz >= 146.83 && pitchInHz < 164.81) {
+            //D
+            noteText.setText("D");
+        }
+        else if(pitchInHz >= 164.81 && pitchInHz <= 174.61) {
+            //E
+            noteText.setText("E");
+        }
+        else if(pitchInHz >= 174.61 && pitchInHz < 185) {
+            //F
+            noteText.setText("F");
+        }
+        else if(pitchInHz >= 185 && pitchInHz < 196) {
+            //G
+            noteText.setText("G");
         }
     }
 
-    public void start() {
-        statusTv = (TextView) findViewById(R.id.status);
-        try {
-            if (mRecorder == null) {
-                mRecorder = new MediaRecorder();
-                mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-                mRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-                mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
-                mRecorder.setOutputFile("dev/null");
-                mRecorder.prepare();
-                mRecorder.start();
-                statusTv.setText("Status: Active");
-            }
-        } catch ( Exception e) {
-            e.printStackTrace();
-            statusTv.setText("Status: Failing");
-        }
-
-    }
-
-    public void stop() {
-        statusTv = (TextView) findViewById(R.id.status);
-        if(mRecorder != null) {
-            mRecorder.stop();
-            mRecorder.release();
-            mRecorder = null;
-            statusTv.setText("Status: Inactive");
-        }
-    }
-
-    public double getAmplitude() {
-        if(mRecorder != null) {
-            return mRecorder.getMaxAmplitude();
-        } else {
-            return 0;
-        }
-    }
 
     public void checkPermission(String permission, int requestCode) {
         if(ContextCompat.checkSelfPermission(MainActivity.this, permission) == PackageManager.PERMISSION_DENIED) {
