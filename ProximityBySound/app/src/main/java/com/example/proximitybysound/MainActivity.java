@@ -74,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
         audioThread.start(); */
 
         double threshold = 8;
-        double sensitivity = 80;
+        double sensitivity = 45;
 
         PercussionOnsetDetector mPercussionDetector = new PercussionOnsetDetector(22050, 1024,
                 new OnsetHandler() {
