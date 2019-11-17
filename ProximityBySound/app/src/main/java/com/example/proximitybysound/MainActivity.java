@@ -33,11 +33,20 @@ public class MainActivity extends AppCompatActivity {
 
     private static final int REQUEST_RECORD_AUDIO_PERMISSION = 200;
 
-    AudioDispatcher dispatcher = AudioDispatcherFactory.fromDefaultMicrophone(22050,1024,0);
+   // AudioDispatcher dispatcher = AudioDispatcherFactory.fromDefaultMicrophone(22050,1024,0);
 
+    private MediaRecorder mRecorder  = null;
+
+    Button s;
+
+    TextView ampTv;
     TextView pitchText;
     TextView noteText;
+    TextView distTv;
 
+    CountDownTimer cdt;
+
+    private int timer = 0;
 
     // Requesting permission to RECORD_AUDIO
     private boolean permissionToRecordAccepted = false;
@@ -51,8 +60,11 @@ public class MainActivity extends AppCompatActivity {
         //Checks Permission
         checkPermission(Manifest.permission.RECORD_AUDIO,REQUEST_RECORD_AUDIO_PERMISSION);
 
+        ampTv = (TextView) findViewById(R.id.amplitude);
         pitchText = (TextView) findViewById(R.id.pitch);
         noteText = (TextView) findViewById(R.id.note);
+        distTv = (TextView) findViewById(R.id.distance);
+
 
         /*PitchDetectionHandler pdh = new PitchDetectionHandler() {
             @Override
@@ -73,7 +85,40 @@ public class MainActivity extends AppCompatActivity {
         Thread audioThread = new Thread(dispatcher, "Audio Thread");
         audioThread.start(); */
 
-        double threshold = 8;
+        s = (Button) findViewById(R.id.startStop);
+        s.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(s.getText().equals("Stop")) {
+                    stop();
+                    s.setText("Start");
+                    timer = 0;
+                    cdt.cancel();
+
+                } else {
+                    start();
+                    s.setText("Stop");
+                    cdt = new CountDownTimer(1000,1000) {
+                        @Override
+                        public void onTick(long millisUntilFinished) {
+                            double amp = getAmplitude();
+                            ampTv.setText("Amplitude: " + amp);
+                            DistanceChecker(amp);
+
+                        }
+
+                        @Override
+                        public void onFinish() {
+                            start();
+                        }
+                    }.start();
+
+                }
+            }
+        });
+
+
+       /* double threshold = 8;
         double sensitivity = 45;
 
         PercussionOnsetDetector mPercussionDetector = new PercussionOnsetDetector(22050, 1024,
@@ -91,10 +136,58 @@ public class MainActivity extends AppCompatActivity {
                 }, sensitivity, threshold);
 
         dispatcher.addAudioProcessor(mPercussionDetector);
-        new Thread(dispatcher,"Audio Dispatcher").start();
+        new Thread(dispatcher,"Audio Dispatcher").start(); */
 
+    }
 
+    public void DistanceChecker(double amplitude) {
+        if(amplitude > 30000) {
+            distTv.setText("Distance: 1");
+        }
+        else if(amplitude > 20000) {
+            distTv.setText("Distance: 2");
+        }
+        else if(amplitude > 10000) {
+            distTv.setText("Distance: 3");
+        }
+        else if(amplitude > 5000) {
+            distTv.setText("Distance: 4");
+        } else {
+            distTv.setText("Distance: 5");
+        }
+    }
 
+    public void start() {
+        try {
+            if (mRecorder == null) {
+                mRecorder = new MediaRecorder();
+                mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+                mRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+                mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+                mRecorder.setOutputFile("dev/null");
+                mRecorder.prepare();
+                mRecorder.start();
+            }
+        } catch ( Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public void stop() {
+        if(mRecorder != null) {
+            mRecorder.stop();
+            mRecorder.release();
+            mRecorder = null;
+        }
+    }
+
+    public double getAmplitude() {
+        if(mRecorder != null) {
+            return mRecorder.getMaxAmplitude();
+        } else {
+            return 0;
+        }
     }
 
 
@@ -131,6 +224,7 @@ public class MainActivity extends AppCompatActivity {
             noteText.setText("G");
         }
     }
+
 
 
     public void checkPermission(String permission, int requestCode) {

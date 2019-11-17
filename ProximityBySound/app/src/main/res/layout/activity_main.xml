@@ -7,14 +7,30 @@
     android:orientation="vertical"
     tools:context=".MainActivity">
 
+    <Button
+        android:id="@+id/startStop"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="20dp"
+        android:text="Start"/>
+
+    <TextView
+        android:id="@+id/amplitude"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:layout_marginLeft="20dp"
+        android:text="Amplitude: "
+        />
 
 
     <TextView
         android:id="@+id/pitch"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
         android:layout_marginTop="20dp"
+        android:layout_marginLeft="20dp"
         android:text="Pitch: "
         />
 
@@ -22,10 +38,20 @@
         android:id="@+id/note"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
         android:layout_marginTop="20dp"
+        android:layout_marginLeft="20dp"
         android:text="Note: "
         />
+
+    <TextView
+        android:id="@+id/distance"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:layout_marginLeft="20dp"
+        android:text="Distance: "
+        />
+
 
 
 
