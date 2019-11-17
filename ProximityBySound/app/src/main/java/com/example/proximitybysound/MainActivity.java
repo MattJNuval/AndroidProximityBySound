@@ -21,6 +21,8 @@ import be.tarsos.dsp.AudioDispatcher;
 import be.tarsos.dsp.AudioEvent;
 import be.tarsos.dsp.AudioProcessor;
 import be.tarsos.dsp.io.android.AudioDispatcherFactory;
+import be.tarsos.dsp.onsets.OnsetHandler;
+import be.tarsos.dsp.onsets.PercussionOnsetDetector;
 import be.tarsos.dsp.pitch.PitchDetectionHandler;
 import be.tarsos.dsp.pitch.PitchDetectionResult;
 import be.tarsos.dsp.pitch.PitchProcessor;
@@ -52,9 +54,10 @@ public class MainActivity extends AppCompatActivity {
         pitchText = (TextView) findViewById(R.id.pitch);
         noteText = (TextView) findViewById(R.id.note);
 
-        PitchDetectionHandler pdh = new PitchDetectionHandler() {
+        /*PitchDetectionHandler pdh = new PitchDetectionHandler() {
             @Override
             public void handlePitch(PitchDetectionResult res, AudioEvent e){
+                res.
                 final float pitchInHz = res.getPitch();
                 runOnUiThread(new Runnable() {
                     @Override
@@ -68,7 +71,27 @@ public class MainActivity extends AppCompatActivity {
         dispatcher.addAudioProcessor(pitchProcessor);
 
         Thread audioThread = new Thread(dispatcher, "Audio Thread");
-        audioThread.start();
+        audioThread.start(); */
+
+        double threshold = 8;
+        double sensitivity = 80;
+
+        PercussionOnsetDetector mPercussionDetector = new PercussionOnsetDetector(22050, 1024,
+                new OnsetHandler() {
+
+                    @Override
+                    public void handleOnset(double time, double salience) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                System.out.println("YAAAYYY");
+                            }
+                        });
+                    }
+                }, sensitivity, threshold);
+
+        dispatcher.addAudioProcessor(mPercussionDetector);
+        new Thread(dispatcher,"Audio Dispatcher").start();
 
 
 
