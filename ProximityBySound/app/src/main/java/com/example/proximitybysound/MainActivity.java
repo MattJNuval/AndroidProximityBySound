@@ -33,7 +33,8 @@ public class MainActivity extends AppCompatActivity {
 
     private static final int REQUEST_RECORD_AUDIO_PERMISSION = 200;
 
-   // AudioDispatcher dispatcher = AudioDispatcherFactory.fromDefaultMicrophone(22050,1024,0);
+    //THIS IS CAUSING THE MEDIA RECORDER EXCEPTION PROBLEM!!!!!!
+   //AudioDispatcher dispatcher = AudioDispatcherFactory.fromDefaultMicrophone(22050,1024,0);
 
     private MediaRecorder mRecorder  = null;
 
@@ -93,25 +94,10 @@ public class MainActivity extends AppCompatActivity {
                     stop();
                     s.setText("Start");
                     timer = 0;
-                    cdt.cancel();
-
                 } else {
                     start();
                     s.setText("Stop");
-                    cdt = new CountDownTimer(1000,1000) {
-                        @Override
-                        public void onTick(long millisUntilFinished) {
-                            double amp = getAmplitude();
-                            ampTv.setText("Amplitude: " + amp);
-                            DistanceChecker(amp);
 
-                        }
-
-                        @Override
-                        public void onFinish() {
-                            start();
-                        }
-                    }.start();
 
                 }
             }
@@ -129,7 +115,9 @@ public class MainActivity extends AppCompatActivity {
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                System.out.println("YAAAYYY");
+                                double amp = getAmplitude();
+                                ampTv.setText("Amplitude: " + amp);
+                                DistanceChecker(amp);
                             }
                         });
                     }
@@ -186,6 +174,7 @@ public class MainActivity extends AppCompatActivity {
         if(mRecorder != null) {
             return mRecorder.getMaxAmplitude();
         } else {
+            System.out.println("BAAADDD!!!");
             return 0;
         }
     }
