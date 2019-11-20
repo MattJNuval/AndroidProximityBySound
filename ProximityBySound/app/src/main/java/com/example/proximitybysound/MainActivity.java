@@ -4,10 +4,14 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 
 import android.Manifest;
+import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.media.MediaRecorder;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.view.View;
@@ -15,6 +19,8 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.util.Random;
 
 import be.tarsos.dsp.AudioDispatcher;
@@ -40,13 +46,14 @@ public class MainActivity extends AppCompatActivity {
     Button s;
 
     TextView ampTv;
-    TextView pitchText;
-    TextView noteText;
     TextView distTv;
 
     CountDownTimer cdt;
 
     private int timer = 0;
+    double amp =0;
+    private StringBuilder dataStr = new StringBuilder();
+
 
     // Requesting permission to RECORD_AUDIO
     private boolean permissionToRecordAccepted = false;
@@ -61,9 +68,9 @@ public class MainActivity extends AppCompatActivity {
         checkPermission(Manifest.permission.RECORD_AUDIO,REQUEST_RECORD_AUDIO_PERMISSION);
 
         ampTv = (TextView) findViewById(R.id.amplitude);
-        pitchText = (TextView) findViewById(R.id.pitch);
-        noteText = (TextView) findViewById(R.id.note);
         distTv = (TextView) findViewById(R.id.distance);
+
+        dataStr.append("Distance,Amplitude");
 
 
         /*PitchDetectionHandler pdh = new PitchDetectionHandler() {
@@ -101,7 +108,7 @@ public class MainActivity extends AppCompatActivity {
                     cdt = new CountDownTimer(1000,1000) {
                         @Override
                         public void onTick(long millisUntilFinished) {
-                            double amp = getAmplitude();
+                            amp = getAmplitude();
                             ampTv.setText("Amplitude: " + amp);
                             DistanceChecker(amp);
 
@@ -142,20 +149,48 @@ public class MainActivity extends AppCompatActivity {
 
     public void DistanceChecker(double amplitude) {
         if(amplitude > 30000) {
+            dataStr.append("\n" + String.valueOf(1)+ ","+ String.valueOf(amp));
             distTv.setText("Distance: 1");
         }
         else if(amplitude > 20000) {
+            dataStr.append("\n" + String.valueOf(2)+ ","+ String.valueOf(amp));
             distTv.setText("Distance: 2");
         }
         else if(amplitude > 10000) {
+            dataStr.append("\n" + String.valueOf(3)+ ","+ String.valueOf(amp));
             distTv.setText("Distance: 3");
         }
         else if(amplitude > 5000) {
+            dataStr.append("\n" + String.valueOf(4)+ ","+ String.valueOf(amp));
             distTv.setText("Distance: 4");
         } else {
+            dataStr.append("\n" + String.valueOf(5)+ ","+ String.valueOf(amp));
             distTv.setText("Distance: 5");
         }
     }
+
+    public void export(View view) {
+        try {
+            FileOutputStream out = openFileOutput("data.csv", Context.MODE_PRIVATE);
+            out.write((dataStr.toString()).getBytes());
+            out.close();
+
+            Context context = getApplicationContext();
+            File fileLocation = new File(getFilesDir(), "data.csv");
+            Uri path = FileProvider.getUriForFile(context,"com.example.proximitybysound.fileprovider", fileLocation);
+            Intent fileIntent = new Intent(Intent.ACTION_SEND);
+            fileIntent.setType("text/csv");
+            fileIntent.putExtra(Intent.EXTRA_SUBJECT, "Data");
+            fileIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            fileIntent.putExtra(Intent.EXTRA_STREAM, path);
+            startActivity(Intent.createChooser(fileIntent,"Sent Mail"));
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
 
     public void start() {
         try {
@@ -191,7 +226,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    public void processPitch(float pitchInHz) {
+    /*public void processPitch(float pitchInHz) {
 
         pitchText.setText("" + pitchInHz);
 
@@ -223,7 +258,7 @@ public class MainActivity extends AppCompatActivity {
             //G
             noteText.setText("G");
         }
-    }
+    } */
 
 
 
