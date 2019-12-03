@@ -14,6 +14,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
         android:layout_marginLeft="20dp"
+        android:textSize="25dp"
         android:text="Amplitude: "
         />
     <TextView
@@ -22,6 +23,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
         android:layout_marginLeft="20dp"
+        android:textSize="25dp"
         android:text="Distance: "
         />
 
