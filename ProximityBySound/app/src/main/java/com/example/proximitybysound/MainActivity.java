@@ -38,6 +38,8 @@ public class MainActivity extends AppCompatActivity {
     TextView pitchText;
     TextView noteText;
 
+    int counter =0 ;
+
 
     // Requesting permission to RECORD_AUDIO
     private boolean permissionToRecordAccepted = false;
@@ -74,7 +76,7 @@ public class MainActivity extends AppCompatActivity {
         audioThread.start(); */
 
         double threshold = 8;
-        double sensitivity = 45;
+        double sensitivity = 75;
 
         PercussionOnsetDetector mPercussionDetector = new PercussionOnsetDetector(22050, 1024,
                 new OnsetHandler() {
@@ -84,7 +86,7 @@ public class MainActivity extends AppCompatActivity {
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                System.out.println("YAAAYYY");
+                                noteText.setText("" + counter++);
                             }
                         });
                     }
